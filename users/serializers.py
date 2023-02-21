@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from .models import User
-from django.contrib.auth.hashers import make_password
 from rest_framework.response import Response
 from rest_framework import status
 
@@ -48,15 +47,5 @@ class UserChangePasswordSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'phone_number', 'first_name', 'last_name', 'old_password', 'new_password'
+             'old_password', 'new_password'
         )
-        read_only_fields = (
-            'phone_number', 'first_name', 'last_name'
-        )
-
-    def update(self, instance, validated_data):
-        if instance.check_password(validated_data.get('old_password')):
-            instance.password = make_password(validated_data.get('new_password'))
-            instance.save()
-            return instance
-        return serializers.ValidationError('Password is wrong!')
