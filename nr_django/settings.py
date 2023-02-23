@@ -50,6 +50,8 @@ INSTALLED_APPS = [
     'mptt',
 
     'users',
+    'utils',
+    'store',
 ]
 
 AUTH_USER_MODEL = 'users.User'

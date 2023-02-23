@@ -32,6 +32,9 @@ class ProductProp(models.Model):
     name = models.CharField(verbose_name='Properties name', max_length=50)
     type = models.ForeignKey(ProductType, related_name='props', on_delete=models.RESTRICT)
 
+    def __str__(self):
+        return self.name
+
 
 class Product(models.Model):
     title = models.CharField(verbose_name='Product title', max_length=50)
@@ -39,7 +42,7 @@ class Product(models.Model):
     type = models.ForeignKey(ProductType, related_name='products', on_delete=models.RESTRICT)
     description = models.TextField(verbose_name='Product description')
     stock = models.PositiveIntegerField()
-    price = models.DecimalField(max_digits=10)
+    price = models.DecimalField(max_digits=12, decimal_places=2)
     is_available = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
@@ -50,7 +53,7 @@ class Product(models.Model):
     class Meta:
         verbose_name = 'Product'
         verbose_name_plural = 'Products'
-        ordering = [-created_at]
+        ordering = ['-created_at']
 
 
 class ProductPropValue(models.Model):
