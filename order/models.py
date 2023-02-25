@@ -7,11 +7,11 @@ from utils.models import Color, Size, State, City
 class Order(models.Model):
     STATUS = (('PAD', 'پرداخت شده'),
               ('PRP', 'در حال آماده سازی'),
-              ('PST', 'در حال ارسال'),
+              ('PST', 'ارسال شده'),
               ('DLV', 'تحویل داده شده'))
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
     total_price = models.PositiveIntegerField()
-    status = models.CharField(choices=STATUS, max_length=20, default='PAD')
+    status = models.CharField(choices=STATUS, max_length=20, default='پرداخت شده')
     paid_at = models.DateTimeField(auto_now_add=True)
     posted_at = models.DateTimeField(blank=True)
     delivered_at = models.DateTimeField(blank=True)
@@ -24,6 +24,7 @@ class OrderItem(models.Model):
     image = models.CharField(max_length=70)
     color = models.CharField(max_length=20)
     size = models.CharField(max_length=10)
+    price = models.DecimalField(max_digits=12, decimal_places=0)
     qty = models.PositiveIntegerField()
 
 

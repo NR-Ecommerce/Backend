@@ -1,11 +1,9 @@
 from rest_framework import serializers
 from .models import Order, OrderItem, ShippingAddress
-from utils.serializers import ColorSerializer, SizeSerializer, StateSerializer, CitySerializer
+from utils.serializers import StateSerializer, CitySerializer
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
-    color = ColorSerializer(read_only=True)
-    size = SizeSerializer(read_only=True)
 
     class Meta:
         model = OrderItem
@@ -29,6 +27,19 @@ class OrderSerializer(serializers.ModelSerializer):
         model = Order
         fields = (
             'id', 'user', 'total_price', 'items', 'address', 'status', 'paid_at', 'posted_at', 'delivered_at'
+        )
+        read_only_fields = (
+            'user', 'status', 'paid_at', 'posted_at', 'delivered_at', 'total_price'
+        )
+
+
+class OrderMiniSerializer(serializers.ModelSerializer):
+    items = OrderItemSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Order
+        fields = (
+            'id', 'user', 'total_price', 'items', 'status', 'paid_at', 'posted_at', 'delivered_at'
         )
         read_only_fields = (
             'user', 'status', 'paid_at', 'posted_at', 'delivered_at', 'total_price'
