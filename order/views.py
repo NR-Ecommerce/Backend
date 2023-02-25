@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView, UpdateAPIView
+from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView, UpdateAPIView, DestroyAPIView
 from .serializers import OrderSerializer, OrderMiniSerializer
 from .models import Order, OrderItem, ShippingAddress
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
@@ -7,6 +7,21 @@ from rest_framework.response import Response
 from rest_framework import status
 from store.models import Product
 from datetime import datetime
+
+
+class OrderListApiView(ListAPIView):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+    permission_classes = [IsAdminUser]
+
+
+class DestroyOrder(DestroyAPIView):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+    permission_classes = [IsAdminUser]
+
+    def get_object(self):
+        return Order.objects.get(pk=self.kwargs['pk'])
 
 
 class CreateOrderApiView(CreateAPIView):
@@ -20,21 +35,28 @@ class CreateOrderApiView(CreateAPIView):
         total_price = 0
         if orderItems and len(orderItems) == 0:
             return Response(data={'message': 'No order items'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Calculating the final price
         for i in orderItems:
-            product = Product.object.get(pk=i['product'])
+            product = Product.objects.get(pk=i['product'])
             total_price += product.price
         total_price += data['shipping_address']['shipping_price']
+
+        # Creating Order
         order = serializer.save(user=self.request.user, total_price=total_price)
-        ShippingAddress.object.create(
+
+        # Creating shipping address
+        ShippingAddress.objects.create(
             order=order,
-            state__id=data['shipping_address']['state_id'],
-            city__id=data['shipping_address']['city_id'],
+            state_id=data['shipping_address']['state_id'],
+            city_id=data['shipping_address']['city_id'],
             detail=data['shipping_address']['detail'],
             post_code=data['shipping_address']['post_code'],
             shipping_price=data['shipping_address']['shipping_price'],
             phone_number=data['shipping_address']['phone_number']
         )
 
+        # Creating each order items
         for i in orderItems:
             product = Product.objects.prefetch_related('images').get(pk=i['product'])
 
@@ -42,9 +64,10 @@ class CreateOrderApiView(CreateAPIView):
                 order=order,
                 product=product,
                 title=product.title,
-                image=product.images[0].url,
+                image=product.images.first().image.url,
                 color=i['color'],
                 size=i['size'],
+                price=product.price,
                 qty=i['qty']
             )
             product.stock -= item.qty
@@ -88,10 +111,14 @@ class UpdateOrderToPrep(UpdateAPIView):
     def get_object(self):
         return Order.objects.get(pk=self.kwargs['pk'])
 
-    def partial_update(self, request, *args, **kwargs):
+    def update(self, request, *args, **kwargs):
         instance = self.get_object()
-        instance.status = 'در حال آماده سازی'
-        instance.save()
+        if instance.status == 'پرداخت شده':
+            instance.status = 'در حال آماده سازی'
+            instance.save()
+            return Response(status=status.HTTP_200_OK, data={'message': 'status changed successfully'})
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST, data={'message': 'you cant change this status!'})
 
 
 class UpdateOrderToPosted(UpdateAPIView):
@@ -104,9 +131,13 @@ class UpdateOrderToPosted(UpdateAPIView):
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
-        instance.status = 'ارسال شده'
-        instance.posted_at = datetime.now()
-        instance.save()
+        if instance.status == 'در حال آماده سازی':
+            instance.status = 'ارسال شده'
+            instance.posted_at = datetime.now()
+            instance.save()
+            return Response(status=status.HTTP_200_OK, data={'message': 'status changed successfully'})
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST, data={'message': 'you cant change this status!'})
 
 
 class UpdateOrderToDelivered(UpdateAPIView):
@@ -119,7 +150,11 @@ class UpdateOrderToDelivered(UpdateAPIView):
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
-        instance.status = 'تحویل داده شده'
-        instance.delivered_at = datetime.now()
-        instance.save()
+        if instance.status == 'ارسال شده':
+            instance.status = 'تحویل داده شده'
+            instance.delivered_at = datetime.now()
+            instance.save()
+            return Response(status=status.HTTP_200_OK, data={'message': 'status changed successfully'})
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST, data={'message': 'you cant change this status!'})
 # Create your views here.

@@ -15,6 +15,8 @@ class ProductViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return Product.objects.prefetch_related('details__sizes').all()
 
+    # def perform_create(self, serializer):
+
 
 class ProductListApiView(ListAPIView):
     queryset = Product.objects.all()
@@ -22,4 +24,4 @@ class ProductListApiView(ListAPIView):
     permission_classes = [AllowAny]
 
     def get_queryset(self):
-        self.queryset.filter(is_available=True)
+        return self.queryset.filter(is_available=True)

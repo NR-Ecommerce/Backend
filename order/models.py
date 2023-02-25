@@ -13,8 +13,8 @@ class Order(models.Model):
     total_price = models.PositiveIntegerField()
     status = models.CharField(choices=STATUS, max_length=20, default='پرداخت شده')
     paid_at = models.DateTimeField(auto_now_add=True)
-    posted_at = models.DateTimeField(blank=True)
-    delivered_at = models.DateTimeField(blank=True)
+    posted_at = models.DateTimeField(blank=True, null=True)
+    delivered_at = models.DateTimeField(blank=True, null=True)
 
 
 class OrderItem(models.Model):

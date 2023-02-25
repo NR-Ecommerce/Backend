@@ -71,9 +71,6 @@ class ProductImage(models.Model):
     alt_text = models.CharField(verbose_name='Alternative text', max_length=255, null=True, blank=True)
     is_preview = models.BooleanField(default=False)
 
-    def __str__(self):
-        return self.alt_text
-
 
 class ProductDetail(models.Model):
     product = models.ForeignKey(Product, related_name='details', on_delete=models.CASCADE)
