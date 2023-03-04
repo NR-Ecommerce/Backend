@@ -43,7 +43,10 @@ class Product(models.Model):
     description = models.TextField(verbose_name='Product description')
     stock = models.PositiveIntegerField()
     price = models.DecimalField(max_digits=12, decimal_places=0)
+    colors = models.ManyToManyField(Color, related_name='products')
+    sizes = models.ManyToManyField(Size, related_name='products')
     is_available = models.BooleanField(default=True)
+    total_sold = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
 
@@ -74,6 +77,6 @@ class ProductImage(models.Model):
 
 class ProductDetail(models.Model):
     product = models.ForeignKey(Product, related_name='details', on_delete=models.CASCADE)
-    color = models.ForeignKey(Color, related_name='products', on_delete=models.SET_NULL, null=True)
-    sizes = models.ManyToManyField(Size, related_name='products')
+    color = models.ForeignKey(Color, related_name='details', on_delete=models.SET_NULL, null=True)
+    sizes = models.ManyToManyField(Size, related_name='details')
 # Create your models here.

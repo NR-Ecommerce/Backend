@@ -71,6 +71,7 @@ class CreateOrderApiView(CreateAPIView):
                 qty=i['qty']
             )
             product.stock -= item.qty
+            product.total_sold += 1
             product.save()
 
         return Response(serializer.data)
